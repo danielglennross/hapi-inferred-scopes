@@ -1,2 +1,2 @@
 # hapi-inferred-scopes
-infer scopes from hierarchies
+infer scopes from resource hierarchies
