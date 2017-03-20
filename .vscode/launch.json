@@ -8,12 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Tests",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-      "stopOnEntry": true,
-      "args": ["--no-timeouts", "test/index.spec.js"],
-      "cwd": "${workspaceRoot}",
-      "runtimeExecutable": null,
-      "env": {}
+      "program": "${workspaceRoot}/test/index.spec.js"
     }
   ]
 }

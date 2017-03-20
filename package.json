@@ -4,7 +4,7 @@
   "description": "infer scope from resource hierarchies",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha -R spec ./test/index.spec.js"
+    "test": "test/index.spec.js"
   },
   "repository": {
     "type": "git",
@@ -16,9 +16,12 @@
   "author": "daniel ross",
   "license": "ISC",
   "devDependencies": {
+    "code": "^4.0.0",
     "eslint": "^2.9.0",
     "eslint-config-airbnb": "^9.0.1",
-    "eslint-plugin-import": "^1.7.0"
+    "eslint-plugin-import": "^1.7.0",
+    "hapi": "^16.1.0",
+    "lab": "^13.0.1"
   },
   "bugs": {
     "url": "https://github.com/danielglennross/hapi-inferred-scopes/issues"
