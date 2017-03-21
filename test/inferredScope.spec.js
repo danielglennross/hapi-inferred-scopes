@@ -743,11 +743,39 @@ describe('inferred scope', () => {
     });
   });
 
-  it('fails to authenticates with a mixture of nested forbidden and required scopes', (done) => {
+  it('fails to authenticates with a mixture of nested forbidden / required scopes, forbidden present', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2:subscope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1', 'scope2:subscope2']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/forbiddenscope',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope1:+subscope1', 'scope2:!subscope2']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/forbiddenscope', (res) => {
+        expect(res.statusCode).to.equal(403);
+        done();
+      });
+    });
+  });
+
+  it('fails to authenticates with a mixture of nested forbidden / required scopes, required missing', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope2', 'scope2']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
