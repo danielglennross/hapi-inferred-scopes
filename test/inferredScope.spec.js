@@ -349,7 +349,9 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope1:subscope2', 'scope2', 'scope2:subscope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(
+      ['scope1:subscope1', 'scope1:subscope2', 'scope2', 'scope2:subscope2'])
+    );
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -439,7 +441,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -450,7 +452,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['+scope1:subscope1']
+            inferredScope: ['+scope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -467,7 +469,63 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope([]));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/requiredscope',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['+scope']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/requiredscope', (res) => {
+        expect(res.statusCode).to.equal(403);
+        done();
+      });
+    });
+  });
+
+  it('authenticates a required nested scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/requiredscope',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['+scope1:subscope1']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/requiredscope', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('fails to authenticates when a required nested scope is missing', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope([]));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -491,67 +549,11 @@ describe('inferred scope', () => {
     });
   });
 
-  it('authenticates a required nested scope', (done) => {
-    const server = new Hapi.Server();
-    server.connection();
-
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2']));
-    server.auth.strategy('scope', 'scopeTest');
-
-    server.register(require('../'), () => {
-
-      server.route({
-        method: 'GET',
-        path: '/requiredscope',
-        config: {
-          auth: 'scope',
-          plugins: {
-            inferredScope: ['scope1:+subscope1']
-          },
-          handler: (request, reply) => reply().code(200)
-        }
-      });
-
-      server.inject('/requiredscope', (res) => {
-        expect(res.statusCode).to.equal(200);
-        done();
-      });
-    });
-  });
-
-  it('fails to authenticates when a required nested scope is missing', (done) => {
-    const server = new Hapi.Server();
-    server.connection();
-
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
-    server.auth.strategy('scope', 'scopeTest');
-
-    server.register(require('../'), () => {
-
-      server.route({
-        method: 'GET',
-        path: '/requiredscope',
-        config: {
-          auth: 'scope',
-          plugins: {
-            inferredScope: ['scope1:+subscope1']
-          },
-          handler: (request, reply) => reply().code(200)
-        }
-      });
-
-      server.inject('/requiredscope', (res) => {
-        expect(res.statusCode).to.equal(403);
-        done();
-      });
-    });
-  });
-
   it('authenticates a missing forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope([]));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -562,7 +564,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['!scope1:subscope1', 'scope2']
+            inferredScope: ['!scope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -579,7 +581,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1', 'scope2:subscope1']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -590,7 +592,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1', '!scope2:subscope1']
+            inferredScope: ['!scope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -607,7 +609,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope([]));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -618,7 +620,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1:!subscope1', 'scope2']
+            inferredScope: ['!scope:subscope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -635,7 +637,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1', 'scope2:subscope1']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -646,7 +648,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1', 'scope2:!subscope1']
+            inferredScope: ['!scope:subscope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -663,7 +665,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -674,7 +676,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope2:!subscope1']
+            inferredScope: ['!scope:subscope']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -691,7 +693,35 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/requiredscope',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['+scope:subscope']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/requiredscope', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates an inferred scope where the route specifies a twice nested forbidden scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -702,7 +732,7 @@ describe('inferred scope', () => {
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope2:+subscope1']
+            inferredScope: ['!scope:subscope1:subscope2']
           },
           handler: (request, reply) => reply().code(200)
         }
@@ -715,7 +745,35 @@ describe('inferred scope', () => {
     });
   });
 
-  it('authenticates with a mixture of nested forbidden and required scopes', (done) => {
+  it('authenticates an inferred scope where the route specifies a twice nested required scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/requiredscope',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['+scope:subscope1:subscope2']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/requiredscope', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates with a requied scope and a missing forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
@@ -726,24 +784,24 @@ describe('inferred scope', () => {
 
       server.route({
         method: 'GET',
-        path: '/forbiddenscope',
+        path: '/mixture',
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1:+subscope1', 'scope2:!subscope2']
+            inferredScope: ['+scope1:subscope1', '!scope2:subscope2']
           },
           handler: (request, reply) => reply().code(200)
         }
       });
 
-      server.inject('/forbiddenscope', (res) => {
+      server.inject('/mixture', (res) => {
         expect(res.statusCode).to.equal(200);
         done();
       });
     });
   });
 
-  it('fails to authenticates with a mixture of nested forbidden / required scopes, forbidden present', (done) => {
+  it('fails to authenticates with an inferred required scope and a forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
@@ -754,24 +812,24 @@ describe('inferred scope', () => {
 
       server.route({
         method: 'GET',
-        path: '/forbiddenscope',
+        path: '/mixture',
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1:+subscope1', 'scope2:!subscope2']
+            inferredScope: ['+scope1:subscope1', '!scope2:subscope2']
           },
           handler: (request, reply) => reply().code(200)
         }
       });
 
-      server.inject('/forbiddenscope', (res) => {
+      server.inject('/mixture', (res) => {
         expect(res.statusCode).to.equal(403);
         done();
       });
     });
   });
 
-  it('fails to authenticates with a mixture of nested forbidden / required scopes, required missing', (done) => {
+  it('fails to authenticates with a required scope and forbidden scope missing', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
@@ -782,17 +840,17 @@ describe('inferred scope', () => {
 
       server.route({
         method: 'GET',
-        path: '/forbiddenscope',
+        path: '/mixture',
         config: {
           auth: 'scope',
           plugins: {
-            inferredScope: ['scope1:+subscope1', 'scope2:!subscope2']
+            inferredScope: ['+scope1:subscope1', '!scope2:subscope2']
           },
           handler: (request, reply) => reply().code(200)
         }
       });
 
-      server.inject('/forbiddenscope', (res) => {
+      server.inject('/mixture', (res) => {
         expect(res.statusCode).to.equal(403);
         done();
       });

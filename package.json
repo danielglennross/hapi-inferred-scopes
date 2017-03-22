@@ -1,10 +1,10 @@
 {
   "name": "hapi-inferred-scopes",
-  "version": "0.1.0",
-  "description": "infer scope from resource hierarchies",
+  "version": "1.0.0",
+  "description": "infer route access from grouped scopes",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test/index.spec.js"
+    "test": "test/inferredScope.spec.js"
   },
   "repository": {
     "type": "git",
