@@ -38,8 +38,9 @@ server.register({
 
 ## Example
 Say within our app we identify the following scope groups:
-`user`
-`user:account`
+
+- `user`
+- `user:account`
 
 We can now guard a route with the most specific scope we'd like a request auth credentials to have. 
 For example, a route which accesses a user's account we can guard with `user:account`.
@@ -49,7 +50,9 @@ Like hapi scopes, we can still make scopes required `+` or forbidden `!` - howev
 If we want to forbid a credential with scope `user:account` from accessing a particular route, we simply specify: `!user:account` on the route.
 A credential that has scope `user` however, is still able to access the route.
 
-Dynamic scopes using request data is also supported (again, like hapi), allowing scopes to be specified such as: `user:{params.accountType}`.
+Dynamic scopes using request data is also supported (again, like hapi), allowing scopes to be specified such as:
+
+`user:{params.accountType}`.
 
 In addition, a `scopeContext` is created and accessible on `request.auth.arifacts.scopeContext`. This is an object representing the hierarchy of grouped scopes.
 `scopeContext` can be inspected to make any further decisions regarding scopes during a request's life-cycle.
@@ -59,7 +62,7 @@ For example a credential with scopes: `['user:account:read', 'user:profile', 'ad
 {
   user: {
     account: {
-      read
+      read: {}
     },
     profile: {}
   },
@@ -68,5 +71,6 @@ For example a credential with scopes: `['user:account:read', 'user:profile', 'ad
 ```
 
 Note:
-Due to the inferred nature of the scopes, a credential with scopes `['user', 'user:account']` will be reduced to `['user']` (as the `account` sub-scope is inferred).
-To allow any scopes, simply assign `inferredScope: []`.
+
+- Due to the inferred nature of the scopes, a credential with scopes `['user', 'user:account']` will be reduced to `['user']` (as the `account` sub-scope is inferred).
+- To allow any scopes, simply assign `inferredScope: []`.
