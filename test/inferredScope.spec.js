@@ -888,4 +888,148 @@ describe('inferred scope', () => {
     });
   });
 
+  it('authenticates with a regex scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/regex',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['/.*/']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/regex', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates with a partial regex nested scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/regex',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope:/sub.*/']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/regex', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates with a regex nested scope', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/regex',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['/.*/:/.*/']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/regex', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('fails to authenticate when a nested scope is missing', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/regex',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['/.*/']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/regex', (res) => {
+        expect(res.statusCode).to.equal(403);
+        done();
+      });
+    });
+  });
+
+  it('authenticates using regex and dynamic scopes', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1:subscope2']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/groupedscope/{scope}/{subscope1}',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['{params.scope}:{params.subscope1}:/sub.*/']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/groupedscope/scope/subscope1', (res) => {
+        expect(res.statusCode).to.equal(200);
+        expect(res.result.scopeContext).to.exist();
+        expect(res.result.scopeContext.scope).to.exist();
+        expect(res.result.scopeContext.scope.subscope1).to.exist();
+        expect(res.result.scopeContext.scope.subscope1.subscope2).to.exist();
+        done();
+      });
+    });
+  });
+
 });
