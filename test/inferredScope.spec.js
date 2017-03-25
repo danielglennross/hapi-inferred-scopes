@@ -661,7 +661,7 @@ describe('inferred scope', () => {
     });
   });
 
-  it('authenticates an inferred scope where the route specifies a nested forbidden scope', (done) => {
+  it('fails to authenticate an inferred scope where the route specifies a nested forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
@@ -683,7 +683,7 @@ describe('inferred scope', () => {
       });
 
       server.inject('/forbiddenscope', (res) => {
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).to.equal(403);
         done();
       });
     });
@@ -717,7 +717,7 @@ describe('inferred scope', () => {
     });
   });
 
-  it('authenticates an inferred scope where the route specifies a twice nested forbidden scope', (done) => {
+  it('fails to authenticate an inferred scope where the route specifies a twice nested forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
@@ -739,7 +739,7 @@ describe('inferred scope', () => {
       });
 
       server.inject('/forbiddenscope', (res) => {
-        expect(res.statusCode).to.equal(200);
+        expect(res.statusCode).to.equal(403);
         done();
       });
     });
@@ -777,7 +777,7 @@ describe('inferred scope', () => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -829,11 +829,11 @@ describe('inferred scope', () => {
     });
   });
 
-  it('fails to authenticates with a required scope and forbidden scope missing', (done) => {
+  it('fails to authenticates with a required scope and an inferred forbidden scope', (done) => {
     const server = new Hapi.Server();
     server.connection();
 
-    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope2', 'scope2']));
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2']));
     server.auth.strategy('scope', 'scopeTest');
 
     server.register(require('../'), () => {
@@ -852,6 +852,34 @@ describe('inferred scope', () => {
 
       server.inject('/mixture', (res) => {
         expect(res.statusCode).to.equal(403);
+        done();
+      });
+    });
+  });
+
+  it('authenticates with a required scope and a forbidden scope missing', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope1:subscope1', 'scope2:subscope2']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/mixture',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['+scope1:subscope1', '!scope2:subscope3']
+          },
+          handler: (request, reply) => reply().code(200)
+        }
+      });
+
+      server.inject('/mixture', (res) => {
+        expect(res.statusCode).to.equal(200);
         done();
       });
     });
@@ -1027,6 +1055,174 @@ describe('inferred scope', () => {
         expect(res.result.scopeContext.scope).to.exist();
         expect(res.result.scopeContext.scope.subscope1).to.exist();
         expect(res.result.scopeContext.scope.subscope1.subscope2).to.exist();
+        done();
+      });
+    });
+  });
+
+  it('authenticates using a match all operator', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['*']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates using a match all operator when a subscope doesn\'t exist', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope:*']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates using a nested match all operator', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope:*']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates using a twice nested match all operator', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1:subscope2']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope:*']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates using the first match all operator discovered', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope:subscope1']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['scope:*:*']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
+        done();
+      });
+    });
+  });
+
+  it('authenticates and ignores any scopes after the match all operator', (done) => {
+    const server = new Hapi.Server();
+    server.connection();
+
+    server.auth.scheme('scopeTest', setAuthSchemeWithScope(['scope']));
+    server.auth.strategy('scope', 'scopeTest');
+
+    server.register(require('../'), () => {
+
+      server.route({
+        method: 'GET',
+        path: '/matchall',
+        config: {
+          auth: 'scope',
+          plugins: {
+            inferredScope: ['*:scope']
+          },
+          handler: (request, reply) => reply(request.auth.artifacts).code(200)
+        }
+      });
+
+      server.inject('/matchall', (res) => {
+        expect(res.statusCode).to.equal(200);
         done();
       });
     });

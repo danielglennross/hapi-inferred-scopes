@@ -50,18 +50,27 @@ Like hapi scopes, we can still make scopes required `+` or forbidden `!` - howev
 If we want to forbid a credential with scope `user:account` from accessing a particular route, we simply specify: `!user:account` on the route.
 A credential that has scope `user` however, is still able to access the route.
 
-Scope segments can also be dynamic expressions that refer to request data (again, like hapi) or regular expressions.
-At this time, dynamic expressions and regular expressions cannot be mixed and matched - they are exclusive.
+Scope segments can also be dynamic expressions that refer to request data (again, like hapi), regular expressions or wild card operators.
+At this time, dynamic expressions, regular expressions and wild card operators cannot be mixed and matched - they are exclusive.
 
 For dynamic expressions, surround the expression in `{...}` like so: 
 
+- `{params.username`
 - `user-{params.username}`
 - `user:{params.accountType}`(child scope is a dynaimc expression)
 
 For regular expressions, surround the expression in `/.../` like so:
 
+- `/.*/`
 - `/user-.*/`
 - `user:/.*/` (child scope is a regular expression)
+
+A wild card operator: match all `*` is supported. 
+This operator will match any scope or subsequent subscopes, including absent ones. For example, `user:*` will match:
+
+- `user`
+- `user:account`
+- `user:account:email` etc.
 
 In addition, a `scopeContext` is created and accessible on `request.auth.arifacts.scopeContext`. This is an object representing the hierarchy of grouped scopes.
 `scopeContext` can be inspected to make any further decisions regarding scopes during a request's life-cycle.

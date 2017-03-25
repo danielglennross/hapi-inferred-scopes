@@ -1,6 +1,6 @@
 {
   "name": "hapi-inferred-scopes",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "infer route access from grouped scopes",
   "main": "lib/index.js",
   "scripts": {
