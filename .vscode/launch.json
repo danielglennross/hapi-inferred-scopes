@@ -8,7 +8,15 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Tests",
-      "program": "${workspaceRoot}/test/inferredScope.spec.js"
+      "program": "${workspaceRoot}/node_modules/lab/bin/lab",
+      "args": ["test"],
+      "skipFiles": [
+        "<node_internals>/**/*.js"
+      ],
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": null,
+      "outputCapture": "std",
+      "protocol": "inspector"
     }
   ]
 }

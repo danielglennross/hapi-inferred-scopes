@@ -4,7 +4,8 @@
   "description": "infer route access from grouped scopes",
   "main": "lib/index.js",
   "scripts": {
-    "test": "test/inferredScope.spec.js"
+    "test": "lab test",
+    "coverage": "lab -C --reporter html test > coverage.html"
   },
   "repository": {
     "type": "git",

@@ -1,13 +1,9 @@
 'use strict';
 
-const Code = require('code');
 const Hapi = require('hapi');
-const Lab = require('lab');
 
-const expect = Code.expect;
-const lab = Lab.script();
-const describe = lab.describe;
-const it = lab.it;
+const { expect } = require('code');
+const { describe, it } = exports.lab = require('lab').script();
 
 const setAuthSchemeWithScope = (scope) =>
   () => ({
