@@ -58,7 +58,7 @@ describe('register', () => {
       exception = e;
     }
     expect(exception).to.not.be.null();
-    expect(exception).to.equal('"invalidProperty" is not allowed');
+    expect(exception.message).to.equal('"invalidProperty" is not allowed');
   });
 
 });
