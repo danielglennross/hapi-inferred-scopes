@@ -15,7 +15,16 @@
   "keywords": [
     "hapi-inferred-scopes"
   ],
-  "author": "daniel ross",
+  "author": {
+    "name": "Daniel Ross",
+    "email": "danielglennross@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Matthew Bates",
+      "email": "matthew.bates.117@gmail.com"
+    }
+  ],
   "license": "ISC",
   "devDependencies": {
     "@hapi/code": "^7.0.0",
