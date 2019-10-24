@@ -18,24 +18,22 @@ const options = {
   scopeAccessor: request => request.auth.credentials.scope
 };
 
-server.register({
-  register: require('hapi-inferred-scopes'),
+await server.register({
+  plugin: require('hapi-inferred-scopes'),
   options
-}, (err) => {
+});
 
-  server.route({
-    method: 'GET',
-    path: '/user/email',
-    config: {
-      auth: 'session',
-      plugins: {
-        inferredScope: ['user:email'] // make this as granular as possible
-      },
-      handler: (request, reply) =>
-        reply(request.auth.artifacts.scopeContext).code(200)
-    }
-  });
-
+server.route({
+  method: 'GET',
+  path: '/user/email',
+  options: {
+    auth: 'session',
+    plugins: {
+      inferredScope: ['user:email'] // make this as granular as possible
+    },
+    handler: (request, h) =>
+      h.response(request.auth.artifacts.scopeContext).code(200)
+  }
 });
 ```
 
