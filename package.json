@@ -1,11 +1,12 @@
 {
   "name": "hapi-inferred-scopes",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "infer route access from grouped scopes",
   "main": "lib/index.js",
   "scripts": {
-    "test": "lab test",
-    "coverage": "lab -C --reporter html test > coverage.html"
+    "coverage": "lab -C --reporter html test > coverage.html",
+    "lint": "node ./node_modules/.bin/eslint lib",
+    "test": "node ./node_modules/@hapi/lab/bin/lab test"
   },
   "repository": {
     "type": "git",
@@ -14,23 +15,38 @@
   "keywords": [
     "hapi-inferred-scopes"
   ],
-  "author": "daniel ross",
+  "author": {
+    "name": "Daniel Ross",
+    "email": "danielglennross@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Matthew Bates",
+      "email": "matthew.bates.117@gmail.com"
+    }
+  ],
   "license": "ISC",
   "devDependencies": {
-    "code": "^4.0.0",
-    "eslint": "^2.9.0",
-    "eslint-config-airbnb": "^9.0.1",
-    "eslint-plugin-import": "^1.7.0",
-    "hapi": "^16.1.0",
-    "lab": "^13.0.1"
+    "@hapi/code": "^7.0.0",
+    "@hapi/eslint-config-hapi": "^12.3.0",
+    "@hapi/eslint-plugin-hapi": "^4.3.4",
+    "@hapi/hapi": "^18.0.0",
+    "@hapi/lab": "^21.0.0",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "eslint-plugin-react-hooks": "^1.7.0"
   },
   "bugs": {
     "url": "https://github.com/danielglennross/hapi-inferred-scopes/issues"
   },
   "homepage": "https://github.com/danielglennross/hapi-inferred-scopes#readme",
   "dependencies": {
-    "boom": "^4.2.0",
-    "deep-get-set": "^1.1.0",
-    "joi": "^10.2.2"
+    "@hapi/boom": "^8.0.0",
+    "@hapi/joi": "^16.0.0",
+    "deep-get-set": "^1.1.0"
   }
 }

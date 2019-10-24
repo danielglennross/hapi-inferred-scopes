@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Tests",
-      "program": "${workspaceRoot}/node_modules/lab/bin/lab",
+      "program": "${workspaceRoot}/node_modules/@hapi/lab/bin/lab",
       "args": ["test"],
       "skipFiles": [
         "<node_internals>/**/*.js"

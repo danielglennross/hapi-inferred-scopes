@@ -1,55 +1,64 @@
 'use strict';
 
-const Hapi = require('hapi');
+const Hapi = require('@hapi/hapi');
 
-const { expect } = require('code');
-const { describe, it } = exports.lab = require('lab').script();
+const { expect } = require('@hapi/code');
+
+const { describe, it } = exports.lab = require('@hapi/lab').script();
 
 describe('register', () => {
 
-  it('passes with default options', (done) => {
+  it('passes with default options', async () => {
     const server = new Hapi.Server();
-    server.connection();
+    let exception = null;
 
-    server.register(require('../'), (err) => {
-      expect(err).to.not.exist();
-      done();
-    });
+    try {
+      await server.register(require('../'));
+    } catch (e) {
+      exception = e;
+    }
+
+    expect(exception).to.be.null();
   });
 
-  it('passes with configured options', (done) => {
+  it('passes with configured options', async () => {
     const server = new Hapi.Server();
-    server.connection();
 
     const options = {
       scopeDelimiter: ';',
-      scopeAccessor: request => request.auth.credentials.scope
+      scopeAccessor: (request) => request.auth.credentials.scope
     };
 
-    server.register({
-      register: require('../'),
-      options
-    }, (err) => {
-      expect(err).to.not.exist();
-      done();
-    });
+    let exception = null;
+    try {
+      await server.register({
+        plugin: require('../'),
+        options
+      });
+    } catch (e) {
+      exception = e;
+    }
+    expect(exception).to.be.null();
   });
 
-  it('fails with invalid options', (done) => {
+  it('fails with invalid options', async () => {
     const server = new Hapi.Server();
-    server.connection();
 
     const options = {
       invalidProperty: 'invalidProperty'
     };
 
-    server.register({
-      register: require('../'),
-      options
-    }, (err) => {
-      expect(err).to.exist();
-      done();
-    });
+    let exception = null;
+    try {
+      await server.register({
+        plugin: require('../'),
+        options
+      });
+    } catch (e) {
+      exception = e;
+    }
+    expect(exception).to.not.be.null();
+    expect(exception.message).to.equal('"invalidProperty" is not allowed');
   });
 
 });
